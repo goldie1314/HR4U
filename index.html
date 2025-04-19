@@ -7,32 +7,43 @@
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
+      background-color: #f5f5f5;
     }
     .chat-container {
       max-width: 600px;
       margin: 0 auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
     .messages {
       border: 1px solid #ccc;
       padding: 10px;
       height: 400px;
-      overflow-y: scroll;
+      overflow-y: auto;
       margin-bottom: 10px;
-      border-radius: 10px;
+      border-radius: 8px;
+      background-color: #fff;
     }
     .input-container {
       display: flex;
+      gap: 10px;
     }
     .input-container input {
       flex: 1;
       padding: 10px;
       font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
     .input-container button {
-      padding: 10px;
+      padding: 10px 20px;
       background-color: #4A90E2;
       color: white;
+      font-size: 16px;
       border: none;
+      border-radius: 8px;
       cursor: pointer;
     }
     .input-container button:hover {
@@ -59,34 +70,35 @@ async function sendMessage() {
   const inputField = document.getElementById('userInput');
   const messages = document.getElementById('messages');
   const userMessage = inputField.value;
-  if (!userMessage) return;
+  if (!userMessage.trim()) return;
 
   // Покажи съобщението на потребителя
   messages.innerHTML += `<div><strong>Ти:</strong> ${userMessage}</div>`;
 
   // Изпрати въпроса към OpenAI
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: userMessage }],
-      max_tokens: 500,
-      temperature: 0.7
-    })
-  });
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: userMessage }],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    });
 
-  const data = await response.json();
-  const botReply = data.choices?.[0]?.message?.content || "Не мога да отговоря в момента.";
+    const data = await response.json();
+    const botReply = data.choices?.[0]?.message?.content || "Извинявай, не успях да отговоря в момента.";
 
-  // Покажи отговора на бота
-  messages.innerHTML += `<div><strong>YourHR:</strong> ${botReply}</div>`;
-
-  // Скролирай надолу автоматично
-  messages.scrollTop = messages.scrollHeight;
+    messages.innerHTML += `<div><strong>YourHR:</strong> ${botReply}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+  } catch (error) {
+    messages.innerHTML += `<div><strong>YourHR:</strong> Грешка при връзката. Опитай пак по-късно.</div>`;
+  }
 
   inputField.value = "";
 }
